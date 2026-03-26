@@ -161,11 +161,6 @@ def save_json_report(payload: dict[str, object], output_path: Path) -> None:
 def save_image(image, output_path):
     output_path = Path(output_path)
 
-    print("FULL PATH:", output_path)
-    print("PARENT:", output_path.parent)
-    print("PARENT EXISTS:", output_path.parent.exists())
-    print("IS DIR:", output_path.parent.is_dir())
-
     success, encoded = cv2.imencode(".jpg", image)
     if not success:
         raise RuntimeError("Encoding failed")
