@@ -22,6 +22,7 @@ YOLO26_Traffic_Detection/
 |   |-- traffic_photo.jpg
 |   \-- traffic_video.mp4
 |-- models/
+|-- analytics/
 |-- outputs/
 |-- src/
 |   |-- config.py
@@ -35,7 +36,7 @@ YOLO26_Traffic_Detection/
 |-- requirements.txt
 ```
 
-The application now uses the repository root as its working base, so model weights are stored in `models/` and generated outputs are saved in `outputs/`.
+The application now uses the repository root as its working base, so model weights are stored in `models/`, annotated media and primary reports are saved in `outputs/`, and dedicated analytics JSON files are saved in `analytics/`.
 
 ## Requirements
 
@@ -115,10 +116,12 @@ python src/main.py --mode image --path example_inputs/traffic_photo.jpg --conf 0
 Each run produces:
 
 - an annotated image or video in `outputs/`
-- a JSON report in `outputs/`
+- a primary JSON report in `outputs/`
+- a dedicated analytics JSON report in `analytics/`
+- a dedicated analytics dashboard image in `analytics/`
 - a console summary
 
-The JSON reports now include richer analytics, including class share, confidence summaries, lane dominance, density breakdowns, peak frames, and per-video traffic trends.
+The analytics JSON files include richer insights such as class share, confidence summaries, lane dominance, density breakdowns, peak frames, and per-video traffic trends. The analytics image is now a chart-based dashboard with bar charts, donut charts, lane comparisons, and peak-frame visuals.
 
 Example console summary:
 

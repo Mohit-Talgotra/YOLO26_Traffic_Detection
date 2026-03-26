@@ -21,6 +21,7 @@ def ensure_project_dirs(config: AppConfig) -> None:
         raise RuntimeError(f"Project directory does not exist: {config.project_root}")
     config.model_dir.mkdir(parents=True, exist_ok=True)
     config.output_dir.mkdir(parents=True, exist_ok=True)
+    config.analytics_dir.mkdir(parents=True, exist_ok=True)
 
 
 
@@ -57,6 +58,20 @@ def build_output_paths(input_label: str, suffix: str, config: AppConfig) -> tupl
     media_path = config.output_dir / f"{stem}_{token}{suffix}"
     json_path = config.output_dir / f"{stem}_{token}.json"
     return media_path, json_path
+
+
+def build_analytics_output_path(input_label: str, config: AppConfig) -> Path:
+    config.analytics_dir.mkdir(parents=True, exist_ok=True)
+    stem = Path(input_label).stem if input_label not in {"0", "webcam"} else "webcam"
+    token = timestamp_token()
+    return config.analytics_dir / f"{stem}_{token}_analytics.json"
+
+
+def build_analytics_visual_path(input_label: str, config: AppConfig) -> Path:
+    config.analytics_dir.mkdir(parents=True, exist_ok=True)
+    stem = Path(input_label).stem if input_label not in {"0", "webcam"} else "webcam"
+    token = timestamp_token()
+    return config.analytics_dir / f"{stem}_{token}_analytics.png"
 
 
 def annotate_frame(

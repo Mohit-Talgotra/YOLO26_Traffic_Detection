@@ -10,6 +10,7 @@ class AppConfig:
 
     project_root: Path = field(default_factory=lambda: Path(__file__).resolve().parent.parent)
     output_dir: Path = field(init=False)
+    analytics_dir: Path = field(init=False)
     model_dir: Path = field(init=False)
     model_name: str = "yolo26n.pt"
     model_release: str = "v8.4.0"
@@ -34,6 +35,7 @@ class AppConfig:
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "output_dir", self.project_root / "outputs")
+        object.__setattr__(self, "analytics_dir", self.project_root / "analytics")
         object.__setattr__(self, "model_dir", self.project_root / "models")
 
 

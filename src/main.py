@@ -10,12 +10,16 @@ from analytics import (
     build_video_analytics,
     print_image_analytics,
     print_video_analytics,
+    render_image_analytics_dashboard,
+    render_video_analytics_dashboard,
 )
 from config import CONFIG
 from counter import VehicleCounter, detection_to_dict
 from detector import YOLOVehicleDetector
 from utils import (
     annotate_frame,
+    build_analytics_output_path,
+    build_analytics_visual_path,
     build_output_paths,
     create_video_writer,
     detect_source_kind,
@@ -65,7 +69,16 @@ def run_image(path_value: str, detector: YOLOVehicleDetector, counter: VehicleCo
     annotated = annotate_frame(frame, detections, summary, CONFIG)
 
     image_output_path, json_output_path = build_output_paths(path_value, ".jpg", CONFIG)
+    analytics_output_path = build_analytics_output_path(path_value, CONFIG)
+    analytics_visual_path = build_analytics_visual_path(path_value, CONFIG)
     save_image(annotated, image_output_path)
+    analytics_visual = render_image_analytics_dashboard(
+        str(Path(path_value).expanduser().resolve()),
+        summary,
+        analytics,
+        CONFIG,
+    )
+    save_image(analytics_visual, analytics_visual_path)
 
     report = {
         "source": str(Path(path_value).expanduser().resolve()),
@@ -77,10 +90,23 @@ def run_image(path_value: str, detector: YOLOVehicleDetector, counter: VehicleCo
     }
     save_json_report(report, json_output_path)
 
+    analytics_report = {
+        "source": str(Path(path_value).expanduser().resolve()),
+        "mode": "image",
+        **summary.to_dict(),
+        "analytics": analytics,
+        "annotated_output": str(image_output_path),
+        "report_output": str(json_output_path),
+        "analytics_visual_output": str(analytics_visual_path),
+    }
+    save_json_report(analytics_report, analytics_output_path)
+
     print_image_summary(summary)
     print_image_analytics(analytics)
     print(f"Annotated image saved to: {image_output_path}")
     print(f"JSON report saved to: {json_output_path}")
+    print(f"Analytics report saved to: {analytics_output_path}")
+    print(f"Analytics visual saved to: {analytics_visual_path}")
 
 
 def run_video(
@@ -100,6 +126,8 @@ def run_video(
     fps = capture.get(cv2.CAP_PROP_FPS)
 
     video_output_path, json_output_path = build_output_paths(path_value, ".mp4", CONFIG)
+    analytics_output_path = build_analytics_output_path(path_value, CONFIG)
+    analytics_visual_path = build_analytics_visual_path(path_value, CONFIG)
     writer = create_video_writer(video_output_path, frame_width, frame_height, fps)
 
     frame_reports: list[dict[str, object]] = []
@@ -146,6 +174,12 @@ def run_video(
 
     average_total = total_vehicle_sum / frame_index if frame_index else 0.0
     analytics = build_video_analytics(frame_reports, fps, CONFIG)
+    analytics_visual = render_video_analytics_dashboard(
+        "webcam" if source == 0 else str(Path(path_value).expanduser().resolve()),
+        analytics,
+        CONFIG,
+    )
+    save_image(analytics_visual, analytics_visual_path)
     report = {
         "source": "webcam" if source == 0 else source,
         "mode": "video" if source != 0 else "webcam",
@@ -160,10 +194,24 @@ def run_video(
     }
     save_json_report(report, json_output_path)
 
+    analytics_report = {
+        "source": "webcam" if source == 0 else source,
+        "mode": "video" if source != 0 else "webcam",
+        "frames_processed": frame_index,
+        "aggregate": report["aggregate"],
+        "analytics": analytics,
+        "annotated_output": str(video_output_path),
+        "report_output": str(json_output_path),
+        "analytics_visual_output": str(analytics_visual_path),
+    }
+    save_json_report(analytics_report, analytics_output_path)
+
     print_video_summary(frame_index, max_total, average_total)
     print_video_analytics(analytics)
     print(f"Annotated video saved to: {video_output_path}")
     print(f"JSON report saved to: {json_output_path}")
+    print(f"Analytics report saved to: {analytics_output_path}")
+    print(f"Analytics visual saved to: {analytics_visual_path}")
 
 
 def main() -> None:
