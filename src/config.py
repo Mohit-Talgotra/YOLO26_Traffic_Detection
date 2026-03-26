@@ -8,7 +8,7 @@ from pathlib import Path
 class AppConfig:
     """Central application configuration."""
 
-    project_root: Path = field(default_factory=lambda: Path(__file__).resolve().parent)
+    project_root: Path = field(default_factory=lambda: Path(__file__).resolve().parent.parent)
     output_dir: Path = field(init=False)
     model_dir: Path = field(init=False)
     model_name: str = "yolo26n.pt"

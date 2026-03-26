@@ -12,12 +12,15 @@ Vehicle type classification and counting for traffic images, videos, and webcam 
 - Splits each frame into two vertical regions for left-lane and right-lane counts
 - Supports automatic GPU selection with CPU fallback
 - Includes an optional Streamlit UI for image uploads
+- Includes a Google Colab notebook for direct cloud execution
 
 ## Project Structure
 
 ```text
 YOLO26_Traffic_Detection/
 |-- example_inputs/
+|   |-- traffic_photo.jpg
+|   \-- traffic_video.mp4
 |-- models/
 |-- outputs/
 |-- src/
@@ -26,15 +29,22 @@ YOLO26_Traffic_Detection/
 |   |-- detector.py
 |   |-- main.py
 |   |-- streamlit_app.py
-|   |-- utils.py
-|   |-- models/
-|   \-- outputs/
+|   \-- utils.py
+|-- YOLO26_Traffic_Detection_Colab.ipynb
+|-- README.md
 |-- requirements.txt
 ```
 
-Note: the current Python code uses paths relative to `src/`, so downloaded model weights and generated outputs are stored in `src/models/` and `src/outputs/`.
+The application now uses the repository root as its working base, so model weights are stored in `models/` and generated outputs are saved in `outputs/`.
 
 ## Requirements
+
+- Python 3.10+
+- `ultralytics`
+- `opencv-python`
+- `numpy`
+- `streamlit`
+- CUDA-enabled PyTorch if you want GPU inference
 
 Install dependencies from the repository root:
 
@@ -49,13 +59,13 @@ Run commands from the repository root.
 ### Image Inference
 
 ```bash
-python src/main.py --mode image --path traffic_photo.jpg
+python src/main.py --mode image --path example_inputs/traffic_photo.jpg
 ```
 
 ### Video Inference
 
 ```bash
-python src/main.py --mode video --path traffic_video.mp4
+python src/main.py --mode video --path example_inputs/traffic_video.mp4
 ```
 
 ### Webcam Inference
@@ -67,7 +77,7 @@ python src/main.py --mode video --path 0
 ### Auto Mode
 
 ```bash
-python src/main.py --mode auto --path traffic_photo.jpg
+python src/main.py --mode auto --path example_inputs/traffic_photo.jpg
 ```
 
 ## Useful Options
@@ -75,37 +85,37 @@ python src/main.py --mode auto --path traffic_photo.jpg
 ### Use a stronger model
 
 ```bash
-python src/main.py --mode image --path traffic_photo.jpg --model yolo26m.pt
-python src/main.py --mode image --path traffic_photo.jpg --model yolo26l.pt
-python src/main.py --mode image --path traffic_photo.jpg --model yolo26x.pt
+python src/main.py --mode image --path example_inputs/traffic_photo.jpg --model yolo26m.pt
+python src/main.py --mode image --path example_inputs/traffic_photo.jpg --model yolo26l.pt
+python src/main.py --mode image --path example_inputs/traffic_photo.jpg --model yolo26x.pt
 ```
 
 ### Select inference device
 
 ```bash
-python src/main.py --mode image --path traffic_photo.jpg --device auto
-python src/main.py --mode image --path traffic_photo.jpg --device cuda:0
-python src/main.py --mode image --path traffic_photo.jpg --device cpu
+python src/main.py --mode image --path example_inputs/traffic_photo.jpg --device auto
+python src/main.py --mode image --path example_inputs/traffic_photo.jpg --device cuda:0
+python src/main.py --mode image --path example_inputs/traffic_photo.jpg --device cpu
 ```
 
 ### Disable video display window
 
 ```bash
-python src/main.py --mode video --path traffic_video.mp4 --no-display
+python src/main.py --mode video --path example_inputs/traffic_video.mp4 --no-display
 ```
 
 ### Adjust confidence threshold
 
 ```bash
-python src/main.py --mode image --path traffic_photo.jpg --conf 0.6
+python src/main.py --mode image --path example_inputs/traffic_photo.jpg --conf 0.35
 ```
 
 ## Output
 
 Each run produces:
 
-- an annotated image or video
-- a JSON report with counts and metadata
+- an annotated image or video in `outputs/`
+- a JSON report in `outputs/`
 - a console summary
 
 Example console summary:
@@ -179,6 +189,23 @@ Using inference device: cuda:0
 
 If `auto` keeps selecting CPU, your installed PyTorch build likely does not have CUDA enabled.
 
+## Google Colab
+
+Open [YOLO26_Traffic_Detection_Colab.ipynb](./YOLO26_Traffic_Detection_Colab.ipynb) in Google Colab and run the cells in order.
+
+What the notebook does:
+
+- installs dependencies
+- clones or opens the project in Colab
+- lets you upload an image or video
+- runs inference with your chosen model and device
+- displays the annotated result inline
+- gives you downloadable outputs from the `outputs/` folder
+
+Recommended Colab runtime:
+
+- Runtime -> Change runtime type -> `GPU`
+
 ## Streamlit UI
 
 Run the optional web interface from the repository root:
@@ -187,23 +214,17 @@ Run the optional web interface from the repository root:
 streamlit run src/streamlit_app.py
 ```
 
-The Streamlit app lets you:
-
-- upload an image
-- view the annotated result
-- inspect the JSON output interactively
-
 ## Model Weights
 
-By default the app uses `yolo26n.pt`. If the file is not already present in `src/models/`, the app attempts to download it automatically.
+By default the app uses `yolo26n.pt`. If the file is not already present in `models/`, the app attempts to download it automatically.
 
 You can also place model files there manually:
 
 ```text
-src/models/yolo26n.pt
-src/models/yolo26m.pt
-src/models/yolo26l.pt
-src/models/yolo26x.pt
+models/yolo26n.pt
+models/yolo26m.pt
+models/yolo26l.pt
+models/yolo26x.pt
 ```
 
 ## Notes
@@ -211,4 +232,4 @@ src/models/yolo26x.pt
 - Only the classes `car`, `motorcycle`, `bus`, and `truck` are counted.
 - The confidence threshold defaults to `0.5`.
 - Video mode reports per-frame counts. It does not perform multi-object tracking across frames.
-- This project is designed to run on CPU as well, but larger models are much more practical on GPU.
+- Larger models and lower confidence thresholds usually improve recall for distant vehicles.

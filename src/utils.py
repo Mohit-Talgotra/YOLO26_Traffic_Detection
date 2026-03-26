@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 from datetime import datetime
 from pathlib import Path
 
@@ -20,6 +19,9 @@ def ensure_output_dir(config: AppConfig) -> Path:
 def ensure_project_dirs(config: AppConfig) -> None:
     if not config.project_root.exists():
         raise RuntimeError(f"Project directory does not exist: {config.project_root}")
+    config.model_dir.mkdir(parents=True, exist_ok=True)
+    config.output_dir.mkdir(parents=True, exist_ok=True)
+
 
 
 def timestamp_token() -> str:
@@ -158,10 +160,10 @@ def save_json_report(payload: dict[str, object], output_path: Path) -> None:
     output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
-def save_image(image, output_path):
+def save_image(image: np.ndarray, output_path: Path) -> None:
     output_path = Path(output_path)
 
-    success, encoded = cv2.imencode(".jpg", image)
+    success, encoded = cv2.imencode(output_path.suffix or ".jpg", image)
     if not success:
         raise RuntimeError("Encoding failed")
 
