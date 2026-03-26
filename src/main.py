@@ -5,6 +5,12 @@ from pathlib import Path
 
 import cv2
 
+from analytics import (
+    build_image_analytics,
+    build_video_analytics,
+    print_image_analytics,
+    print_video_analytics,
+)
 from config import CONFIG
 from counter import VehicleCounter, detection_to_dict
 from detector import YOLOVehicleDetector
@@ -55,6 +61,7 @@ def run_image(path_value: str, detector: YOLOVehicleDetector, counter: VehicleCo
     frame = detector.load_image(path_value)
     detections = detector.predict_frame(frame)
     summary = counter.summarize(detections, frame.shape[1])
+    analytics = build_image_analytics(summary, detections, frame.shape, CONFIG)
     annotated = annotate_frame(frame, detections, summary, CONFIG)
 
     image_output_path, json_output_path = build_output_paths(path_value, ".jpg", CONFIG)
@@ -64,12 +71,14 @@ def run_image(path_value: str, detector: YOLOVehicleDetector, counter: VehicleCo
         "source": str(Path(path_value).expanduser().resolve()),
         "mode": "image",
         **summary.to_dict(),
+        "analytics": analytics,
         "detections": [detection_to_dict(item) for item in detections],
         "annotated_output": str(image_output_path),
     }
     save_json_report(report, json_output_path)
 
     print_image_summary(summary)
+    print_image_analytics(analytics)
     print(f"Annotated image saved to: {image_output_path}")
     print(f"JSON report saved to: {json_output_path}")
 
@@ -112,6 +121,7 @@ def run_video(
 
             frame_report = {
                 "frame_index": frame_index,
+                "timestamp_seconds": round(frame_index / (fps if fps and fps > 0 else 25.0), 2),
                 **summary.to_dict(),
                 "detections": [detection_to_dict(item) for item in detections],
             }
@@ -135,6 +145,7 @@ def run_video(
         cv2.destroyAllWindows()
 
     average_total = total_vehicle_sum / frame_index if frame_index else 0.0
+    analytics = build_video_analytics(frame_reports, fps, CONFIG)
     report = {
         "source": "webcam" if source == 0 else source,
         "mode": "video" if source != 0 else "webcam",
@@ -143,12 +154,14 @@ def run_video(
             "average_vehicles_per_frame": round(average_total, 2),
             "peak_vehicles_in_a_frame": max_total,
         },
+        "analytics": analytics,
         "frames": frame_reports,
         "annotated_output": str(video_output_path),
     }
     save_json_report(report, json_output_path)
 
     print_video_summary(frame_index, max_total, average_total)
+    print_video_analytics(analytics)
     print(f"Annotated video saved to: {video_output_path}")
     print(f"JSON report saved to: {json_output_path}")
 

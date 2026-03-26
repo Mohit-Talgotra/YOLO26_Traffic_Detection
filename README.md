@@ -118,6 +118,8 @@ Each run produces:
 - a JSON report in `outputs/`
 - a console summary
 
+The JSON reports now include richer analytics, including class share, confidence summaries, lane dominance, density breakdowns, peak frames, and per-video traffic trends.
+
 Example console summary:
 
 ```text
